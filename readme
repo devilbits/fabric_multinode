@@ -1,0 +1,9 @@
+../bin/cryptogen generate --config=./crypto-config.yaml
+
+../bin/configtxgen -profile OrdererGenesis -outputBlock ./channel-artifacts/genesis.block
+
+export CHANNEL_ONE_NAME=channelall
+export CHANNEL_ONE_PROFILE=ChannelAll
+
+
+../bin/configtxgen -profile ${CHANNEL_ONE_PROFILE} -outputCreateChannelTx ./channel-artifacts/${CHANNEL_ONE_NAME}.tx -channelID $CHANNEL_ONE_NAME

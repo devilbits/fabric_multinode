@@ -1,0 +1,114 @@
+Organizations:
+
+    - &OrdererOrg
+        Name: OrdererOrg
+        ID: OrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/example.com/msp
+
+    - &Org1
+        Name: Org1MSP
+        ID: Org1MSP
+        MSPDir: crypto-config/peerOrganizations/org1.example.com/msp
+#---<
+        peers:
+          - peer1.org1.example.com
+          - peer2.org1.example.com
+          - peer3.org1.example.com
+
+#--->
+        AnchorPeers:
+            - Host: peer0.org1.example.com
+#            - Host: peer1.org1.example.com
+#            - Host: peer2.org1.example.com
+#            - Host: peer3.org1.example.com
+              Port: 7051
+
+    - &Org2
+        Name: Org2MSP
+        ID: Org2MSP
+        MSPDir: crypto-config/peerOrganizations/org2.example.com/msp
+#---<
+        peers:
+ 
+          - peer1.org1.example.com
+          - peer2.org1.example.com
+          - peer3.org1.example.com
+
+#--->
+
+        AnchorPeers:
+            - Host: peer0.org2.example.com
+#            - Host: peer1.org2.example.com
+#            - Host: peer2.org2.example.com
+#            - Host: peer3.org2.example.com
+              Port: 7051
+
+#---<
+
+peers:
+  peer0.org1.example.com:
+    # this URL is used to send endorsement and query requests
+#    url: grpcs://ec2-13-59-99-140.us-east-2.compute.amazonaws.com:7051
+     url:0.0.0.0:7501
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+    tlsCACerts:
+      path: /crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+
+#--->
+
+Orderer: &OrdererDefaults
+    OrdererType: solo
+    Addresses:
+        - orderer.example.com:7050
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+
+    Kafka:
+        Brokers:
+            - 127.0.0.1:9092
+    Organizations:
+
+Application: &ApplicationDefaults
+    Organizations:
+
+Capabilities:
+    Global: &ChannelCapabilities
+        V1_1: true
+
+    Orderer: &OrdererCapabilities
+        V1_1: true
+
+    Application: &ApplicationCapabilities
+        V1_1: true
+
+Profiles:
+    OrdererGenesis:
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *Org1
+                    - *Org2
+    
+    ChannelAll:
+        Consortium: SampleConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Org1
+                - *Org2
+
+            Capabilities:
+                <<: *ApplicationCapabilities
+    
